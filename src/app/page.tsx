@@ -1,5 +1,5 @@
-import styles from './page.module.css';
+import { SelectAlbumsPage } from '@/components/pages/SelectAlbumsPage';
 
 export default function Home() {
-  return <div className={styles.page}></div>;
+  return <SelectAlbumsPage />;
 }

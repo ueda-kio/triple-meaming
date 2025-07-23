@@ -1,0 +1,132 @@
+.content {
+  width: 800px;
+  max-width: 90vw;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.artistList {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.artistSection {
+  margin-bottom: 32px;
+}
+
+.artistName {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 16px 0;
+}
+
+.albumGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.albumCard {
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  background: #f9fafb;
+  transition: all 0.2s ease-in-out;
+}
+
+.albumCard:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.albumJacket {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.albumInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trackCount {
+  font-size: 14px;
+  color: #6b7280;
+  margin-left: 28px; /* チェックボックスとアイコンの分だけインデント */
+}
+
+.footer {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 16px;
+  margin-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.selectionSummary {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.footerButtons {
+  display: flex;
+  gap: 12px;
+}
+
+/* スクロールバーのカスタマイズ */
+.artistList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.artistList::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.artistList::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.artistList::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .content {
+    width: 95vw;
+  }
+
+  .albumGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .footerButtons {
+    justify-content: center;
+  }
+}

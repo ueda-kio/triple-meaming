@@ -1,0 +1,185 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 16px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.progressBar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #10b981;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.questionInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.questionInfo h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  gap: 48px;
+}
+
+.playerSection {
+  text-align: center;
+}
+
+.playButton {
+  margin-bottom: 16px;
+}
+
+.loadingText {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  margin: 0;
+}
+
+.answersSection {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 100%;
+  max-width: 600px;
+}
+
+.answersSection h2 {
+  margin: 0 0 24px 0;
+  font-size: 20px;
+  color: #1f2937;
+}
+
+.trackButtons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.trackButton {
+  position: relative;
+}
+
+.revealedAnswer {
+  font-size: 12px;
+  font-weight: normal;
+  color: #dc2626;
+}
+
+.controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.loading,
+.error {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+  padding: 48px 24px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.error {
+  background: rgba(220, 38, 38, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  max-width: 500px;
+  margin: auto;
+}
+
+.error h2 {
+  color: #fca5a5;
+  margin: 0 0 16px 0;
+}
+
+.error p {
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 24px 0;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .main {
+    padding: 24px 16px;
+    gap: 32px;
+  }
+
+  .answersSection {
+    padding: 24px;
+  }
+
+  .trackButtons {
+    grid-template-columns: 1fr;
+  }
+
+  .controls {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .questionInfo {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .questionInfo h1 {
+    text-align: center;
+  }
+}

@@ -1,0 +1,170 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+}
+
+.header {
+  text-align: center;
+  color: white;
+  margin-bottom: 48px;
+}
+
+.title {
+  font-size: 48px;
+  font-weight: 900;
+  margin: 0 0 16px 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.subtitle {
+  font-size: 18px;
+  opacity: 0.9;
+  margin: 0;
+  max-width: 600px;
+}
+
+.main {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.selectionCard {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.cardTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 24px 0;
+  text-align: center;
+}
+
+.selectionSummary {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.summaryStats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 12px;
+}
+
+.stat {
+  font-size: 18px;
+  color: #374151;
+}
+
+.stat strong {
+  color: #3b82f6;
+  font-size: 24px;
+}
+
+.summaryText {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.noSelection {
+  text-align: center;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 2px dashed #d1d5db;
+}
+
+.noSelection p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.hint {
+  font-size: 14px;
+  margin-top: 8px !important;
+}
+
+.cardActions {
+  display: flex;
+  justify-content: center;
+}
+
+.startSection {
+  display: flex;
+  justify-content: center;
+}
+
+.loading,
+.error {
+  background: white;
+  border-radius: 16px;
+  padding: 48px;
+  text-align: center;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+.error h2 {
+  color: #dc2626;
+  margin: 0 0 16px 0;
+}
+
+.error p {
+  color: #6b7280;
+  margin: 0 0 24px 0;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 36px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+  }
+
+  .selectionCard {
+    padding: 24px;
+  }
+
+  .summaryStats {
+    flex-direction: column;
+    gap: 16px;
+  }
+}

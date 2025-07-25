@@ -1,3 +1,5 @@
+/// <reference path="../types/youtube.d.ts" />
+
 /**
  * YouTube URL から Video ID を抽出する
  * @param url YouTube URL

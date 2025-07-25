@@ -1,3 +1,4 @@
+/// <reference path="../types/youtube.d.ts" />
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Track } from '@/types';
 import { useYouTubePlayer } from './useYouTubePlayer';

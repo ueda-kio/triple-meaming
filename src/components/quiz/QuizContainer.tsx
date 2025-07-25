@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/common';
-import { useMultipleYouTubePlayers } from '@/hooks';
+import { useMultipleYouTubePlayers, useSingleYouTubePlayer } from '@/hooks';
 import {
   calculateProgress,
   generateQuizQuestions,
@@ -12,6 +12,7 @@ import {
 import { fetchSongsData, getSelectedAlbumIds, createAlbumsQueryParam } from '@/lib/songs-api';
 import type { Album, QuizQuestion, SongsData, Track } from '@/types';
 import { AnswerModal } from './AnswerModal';
+import { TrackCassetteCard } from './TrackCassetteCard';
 import styles from './QuizContainer.module.css';
 
 interface QuizContainerProps {
@@ -34,9 +35,10 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
     trackNumber: number;
   }>({ isOpen: false, trackNumber: 1 });
 
-  // YouTube Player
+  // YouTube Players
   const { isPlaying, isAllPlayersReady, playTracks, stopTracks, preloadTracks } =
     useMultipleYouTubePlayers();
+  const singlePlayer = useSingleYouTubePlayer('correct-track-player');
 
   // データの初期読み込みとクイズ生成
   useEffect(() => {
@@ -99,6 +101,23 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
   const handleStopTracks = () => {
     stopTracks();
   };
+
+  // 個別楽曲再生
+  const handlePlaySingleTrack = useCallback(
+    (track: Track, startTime: number) => {
+      // メイン再生中なら停止
+      if (isPlaying) {
+        stopTracks();
+      }
+      singlePlayer.playTrack(track, startTime, 5);
+    },
+    [isPlaying, stopTracks, singlePlayer],
+  );
+
+  // 個別楽曲停止
+  const handleStopSingleTrack = useCallback(() => {
+    singlePlayer.stopTrack();
+  }, [singlePlayer]);
 
   // 回答モーダルを開く
   const handleOpenAnswerModal = (trackNumber: number) => {
@@ -282,32 +301,98 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
           {currentQuestion.correctAnswers.length > 0 && (
             <div className={styles.correctAnswers}>
               <h3>正解済み楽曲:</h3>
-              <ul>
+              <div className={styles.cassetteList}>
                 {currentQuestion.correctAnswers.map((trackId) => {
                   const track = currentQuestion.tracks.find(t => t.id === trackId);
+                  const trackIndex = currentQuestion.tracks.findIndex(t => t.id === trackId);
+                  const startTime = trackIndex !== -1 ? currentQuestion.startTimes[trackIndex] : 0;
+                  
+                  if (!track || !songsData) return null;
+                  
+                  // 楽曲が所属するアルバムとアーティストを検索
+                  let albumInfo: { album: Album; artistName: string } | null = null;
+                  for (const artist of songsData.artists) {
+                    for (const album of artist.albums) {
+                      if (album.tracks.some(t => t.id === trackId)) {
+                        albumInfo = { album, artistName: artist.name };
+                        break;
+                      }
+                    }
+                    if (albumInfo) break;
+                  }
+                  
+                  if (!albumInfo) return null;
+                  
                   return (
-                    <li key={trackId}>{track?.title}</li>
+                    <TrackCassetteCard
+                      key={trackId}
+                      track={track}
+                      album={albumInfo.album}
+                      artistName={albumInfo.artistName}
+                      startTime={startTime}
+                      onPlay={handlePlaySingleTrack}
+                      onStop={handleStopSingleTrack}
+                      isPlaying={singlePlayer.isPlaying}
+                    />
                   );
                 })}
-              </ul>
+              </div>
             </div>
           )}
-          {/* 答えが見られた場合の全楽曲表示 */}
+          {/* 答えが見られた場合の未回答楽曲表示 */}
           {currentQuestion.isAnswerRevealed && (
             <div className={styles.revealedAnswers}>
-              <h3>この問題の楽曲一覧:</h3>
-              <ul>
-                {currentQuestion.tracks.map((track) => (
-                  <li key={track.id}>{track.title}</li>
-                ))}
-              </ul>
+              <h3>未回答楽曲:</h3>
+              <div className={styles.cassetteList}>
+                {currentQuestion.tracks.map((track, index) => {
+                  // 既に正解済みの楽曲は除外
+                  if (currentQuestion.correctAnswers.includes(track.id)) {
+                    return null;
+                  }
+                  
+                  if (!songsData) return null;
+                  
+                  // 楽曲が所属するアルバムとアーティストを検索
+                  let albumInfo: { album: Album; artistName: string } | null = null;
+                  for (const artist of songsData.artists) {
+                    for (const album of artist.albums) {
+                      if (album.tracks.some(t => t.id === track.id)) {
+                        albumInfo = { album, artistName: artist.name };
+                        break;
+                      }
+                    }
+                    if (albumInfo) break;
+                  }
+                  
+                  if (!albumInfo) return null;
+                  
+                  const startTime = currentQuestion.startTimes[index];
+                  
+                  return (
+                    <TrackCassetteCard
+                      key={track.id}
+                      track={track}
+                      album={albumInfo.album}
+                      artistName={albumInfo.artistName}
+                      startTime={startTime}
+                      onPlay={handlePlaySingleTrack}
+                      onStop={handleStopSingleTrack}
+                      isPlaying={singlePlayer.isPlaying}
+                    />
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
 
         <div className={styles.controls}>
           {!currentQuestion.isAnswerRevealed && (
-            <Button variant="secondary" onClick={handleShowAnswer}>
+            <Button 
+              variant="secondary" 
+              onClick={handleShowAnswer}
+              disabled={currentQuestion.correctAnswers.length === 3}
+            >
               答えを見る
             </Button>
           )}

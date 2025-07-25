@@ -1,3 +1,4 @@
+/// <reference path="../types/youtube.d.ts" />
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPlayerElement, debugYouTubeAPIStatus, extractYouTubeVideoId, loadYouTubeAPIWithRetry } from '@/lib/youtube-utils';
 import type { YouTubePlayerState } from '@/types';
@@ -10,7 +11,7 @@ interface UseYouTubePlayerReturn extends YouTubePlayerState {
 
 export const useYouTubePlayer = (playerId: string = 'youtube-player'): UseYouTubePlayerReturn => {
   // Player インスタンス
-  const playerRef = useRef<YT.Player | null>(null);
+  const playerRef = useRef<any>(null);
 
   // 状態管理
   const [isPlayerReady, setIsPlayerReady] = useState(false);
@@ -51,11 +52,11 @@ export const useYouTubePlayer = (playerId: string = 'youtube-player'): UseYouTub
 
         console.log('Creating YT.Player instance...', {
           playerId,
-          YT: !!window.YT,
-          Player: !!(window.YT && window.YT.Player)
+          YT: !!(window as any).YT,
+          Player: !!((window as any).YT && (window as any).YT.Player)
         });
 
-        const player = new window.YT!.Player(playerId, {
+        const player = new (window as any).YT.Player(playerId, {
           height: '315',
           width: '560',
           playerVars: {
@@ -68,7 +69,7 @@ export const useYouTubePlayer = (playerId: string = 'youtube-player'): UseYouTub
             playsinline: 1,
           },
           events: {
-            onReady: (event) => {
+            onReady: (event: any) => {
               console.log('=== YouTube Player Ready ===', {
                 playerId,
                 event,
@@ -78,7 +79,7 @@ export const useYouTubePlayer = (playerId: string = 'youtube-player'): UseYouTub
               playerRef.current = player;
               setIsPlayerReady(true);
             },
-            onStateChange: (event) => {
+            onStateChange: (event: any) => {
               console.log('=== Player State Change ===', {
                 playerId,
                 state: event.data,
@@ -88,18 +89,18 @@ export const useYouTubePlayer = (playerId: string = 'youtube-player'): UseYouTub
               const state = event.data;
 
               // 再生状態の管理
-              setIsPlaying(state === window.YT!.PlayerState.PLAYING);
+              setIsPlaying(state === (window as any).YT.PlayerState.PLAYING);
 
               // 動画読み込み状態の管理
               if (
-                state === window.YT!.PlayerState.CUED ||
-                state === window.YT!.PlayerState.PAUSED ||
-                state === window.YT!.PlayerState.PLAYING
+                state === (window as any).YT.PlayerState.CUED ||
+                state === (window as any).YT.PlayerState.PAUSED ||
+                state === (window as any).YT.PlayerState.PLAYING
               ) {
                 setIsVideoLoaded(true);
               }
             },
-            onError: (event) => {
+            onError: (event: any) => {
               console.error('=== YouTube Player Error ===', {
                 playerId,
                 error: event.data,
@@ -144,15 +145,15 @@ export const useYouTubePlayer = (playerId: string = 'youtube-player'): UseYouTub
 
   // ヘルパー関数：状態名を取得
   const getStateName = (state: number): string => {
-    if (!window.YT) return 'UNKNOWN';
+    if (!(window as any).YT) return 'UNKNOWN';
     
     const states = {
-      [window.YT.PlayerState.UNSTARTED]: 'UNSTARTED',
-      [window.YT.PlayerState.ENDED]: 'ENDED', 
-      [window.YT.PlayerState.PLAYING]: 'PLAYING',
-      [window.YT.PlayerState.PAUSED]: 'PAUSED',
-      [window.YT.PlayerState.BUFFERING]: 'BUFFERING',
-      [window.YT.PlayerState.CUED]: 'CUED'
+      [(window as any).YT.PlayerState.UNSTARTED]: 'UNSTARTED',
+      [(window as any).YT.PlayerState.ENDED]: 'ENDED', 
+      [(window as any).YT.PlayerState.PLAYING]: 'PLAYING',
+      [(window as any).YT.PlayerState.PAUSED]: 'PAUSED',
+      [(window as any).YT.PlayerState.BUFFERING]: 'BUFFERING',
+      [(window as any).YT.PlayerState.CUED]: 'CUED'
     };
     
     return states[state] || `UNKNOWN(${state})`;

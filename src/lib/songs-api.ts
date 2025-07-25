@@ -32,10 +32,19 @@ export const getSelectedAlbumIds = (searchParams: URLSearchParams): string[] => 
 
 /**
  * アルバムIDの配列をURLクエリパラメータに変換する
+ * すべてのアルバムが選択されている場合は空文字を返す
  * @param albumIds アルバムIDの配列
+ * @param allAlbumIds すべてのアルバムIDの配列（オプション）
  * @returns クエリパラメータ文字列
  */
-export const createAlbumsQueryParam = (albumIds: string[]): string => {
+export const createAlbumsQueryParam = (albumIds: string[], allAlbumIds?: string[]): string => {
   if (albumIds.length === 0) return '';
+  
+  // すべてのアルバムが選択されている場合はクエリパラメータ不要
+  if (allAlbumIds && albumIds.length === allAlbumIds.length && 
+      albumIds.every(id => allAlbumIds.includes(id))) {
+    return '';
+  }
+  
   return `albums=${albumIds.join(',')}`;
 };

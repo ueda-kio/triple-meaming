@@ -28,7 +28,16 @@ export const SelectAlbumsPage: React.FC = () => {
 
         // URLパラメータから選択済みアルバムを復元
         const urlAlbumIds = getSelectedAlbumIds(searchParams);
-        setSelectedAlbumIds(urlAlbumIds);
+        
+        // URLクエリがない場合はすべてのアルバムを選択状態にする
+        if (urlAlbumIds.length === 0) {
+          const allAlbumIds = data.artists.flatMap(artist => 
+            artist.albums.map(album => album.id)
+          );
+          setSelectedAlbumIds(allAlbumIds);
+        } else {
+          setSelectedAlbumIds(urlAlbumIds);
+        }
 
         setError(null);
       } catch (err) {
@@ -45,10 +54,15 @@ export const SelectAlbumsPage: React.FC = () => {
   const handleAlbumSelection = (albumIds: string[]) => {
     setSelectedAlbumIds(albumIds);
 
-    // URLを更新
-    const queryParam = createAlbumsQueryParam(albumIds);
-    const newUrl = queryParam ? `/?${queryParam}` : '/';
-    router.replace(newUrl);
+    // URLを更新（すべてのアルバムが選択されている場合はクエリ不要）
+    if (songsData) {
+      const allAlbumIds = songsData.artists.flatMap(artist => 
+        artist.albums.map(album => album.id)
+      );
+      const queryParam = createAlbumsQueryParam(albumIds, allAlbumIds);
+      const newUrl = queryParam ? `/?${queryParam}` : '/';
+      router.replace(newUrl);
+    }
   };
 
   const handleStartQuiz = () => {
@@ -57,8 +71,15 @@ export const SelectAlbumsPage: React.FC = () => {
       return;
     }
 
-    const queryParam = createAlbumsQueryParam(selectedAlbumIds);
-    router.push(`/quiz?${queryParam}`);
+    // すべてのアルバムが選択されている場合はクエリ不要
+    if (songsData) {
+      const allAlbumIds = songsData.artists.flatMap(artist => 
+        artist.albums.map(album => album.id)
+      );
+      const queryParam = createAlbumsQueryParam(selectedAlbumIds, allAlbumIds);
+      const quizUrl = queryParam ? `/quiz?${queryParam}` : '/quiz';
+      router.push(quizUrl);
+    }
   };
 
   const getSelectedAlbumsInfo = () => {

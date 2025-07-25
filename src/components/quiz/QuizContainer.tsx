@@ -9,7 +9,7 @@ import {
   generateQuizQuestions,
   getTracksFromSelectedAlbums,
 } from '@/lib/quiz-utils';
-import { fetchSongsData, getSelectedAlbumIds } from '@/lib/songs-api';
+import { fetchSongsData, getSelectedAlbumIds, createAlbumsQueryParam } from '@/lib/songs-api';
 import type { Album, QuizQuestion, SongsData, Track } from '@/types';
 import { AnswerModal } from './AnswerModal';
 import styles from './QuizContainer.module.css';
@@ -46,7 +46,12 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
         const data = await fetchSongsData();
         setSongsData(data);
 
-        const availableTracks = getTracksFromSelectedAlbums(data.artists, albumIds);
+        // URLクエリがない場合はすべてのアルバムを使用
+        const finalAlbumIds = albumIds.length === 0 
+          ? data.artists.flatMap(artist => artist.albums.map(album => album.id))
+          : albumIds;
+          
+        const availableTracks = getTracksFromSelectedAlbums(data.artists, finalAlbumIds);
 
         if (availableTracks.length < 3) {
           throw new Error('選択されたアルバムの楽曲が不足しています（最低3曲必要）');
@@ -64,12 +69,8 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
       }
     };
 
-    if (albumIds.length > 0) {
-      initializeQuiz();
-    } else {
-      setError('出題範囲が選択されていません');
-      setIsLoading(false);
-    }
+    // albumIdsが空でも初期化を実行（すべてのアルバムを使用）
+    initializeQuiz();
   }, [albumIds]);
 
   // 次の問題のプリロード
@@ -182,8 +183,17 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
 
   // トップページに戻る
   const handleBackToTop = () => {
-    const queryParam = albumIds.length > 0 ? `?albums=${albumIds.join(',')}` : '';
-    router.push(`/${queryParam}`);
+    if (songsData) {
+      const allAlbumIds = songsData.artists.flatMap(artist => 
+        artist.albums.map(album => album.id)
+      );
+      const finalAlbumIds = albumIds.length === 0 ? allAlbumIds : albumIds;
+      const queryParam = createAlbumsQueryParam(finalAlbumIds, allAlbumIds);
+      const homeUrl = queryParam ? `/?${queryParam}` : '/';
+      router.push(homeUrl);
+    } else {
+      router.push('/');
+    }
   };
 
   if (isLoading) {

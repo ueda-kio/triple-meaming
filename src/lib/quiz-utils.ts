@@ -87,27 +87,60 @@ export const generateQuizQuestions = (
 
 /**
  * 楽曲の開始時間を算出する（クイズ毎に異なる開始時間）
+ * YouTube_Iframe_Guide.mdの仕様に従い、楽曲のdurationが明示されている場合は中間地点を基準とする
  * @param track 楽曲データ
  * @param playDuration 再生時間（秒）
  * @returns 開始時間（秒）
  */
 export const calculateStartTime = (track: Track, playDuration: number = 5): number => {
-  // 楽曲の長さが指定されている場合、40-60%の範囲からランダム選択
-  // ただし、楽曲が十分な長さ（180秒以上）の場合のみ
-  if (track.duration !== undefined && track.duration >= 180) {
-    const min = Math.floor(track.duration * 0.4);
-    const max = Math.floor(track.duration * 0.6);
-    // 再生時間を考慮して最大開始時間を調整
-    const adjustedMax = Math.min(max, track.duration - playDuration);
-    if (adjustedMax > min) {
-      return Math.floor(Math.random() * (adjustedMax - min + 1)) + min;
-    }
+  // durationが明示されている楽曲の場合
+  if (track.duration !== undefined && track.duration > 0) {
+    return calculateMidpointStartTime(track.duration, playDuration);
   }
 
-  // 原則: 90秒から150秒の間のランダムな時間（再生時間を考慮）
+  // durationが未指定の楽曲の場合: 従来ロジック（90-150秒の範囲）
   const defaultMin = 90;
-  const defaultMax = Math.min(150, 180 - playDuration); // 最大3分 - 再生時間
-  return Math.floor(Math.random() * (defaultMax - defaultMin + 1)) + defaultMin;
+  const defaultMax = 150;
+  // 再生時間を考慮して最大開始時間を調整（想定最大時間180秒）
+  const adjustedMax = Math.min(defaultMax, 180 - playDuration);
+  
+  if (adjustedMax <= defaultMin) {
+    // 調整後の最大値が最小値以下の場合、最小値を返す
+    return defaultMin;
+  }
+  
+  return Math.floor(Math.random() * (adjustedMax - defaultMin + 1)) + defaultMin;
+};
+
+/**
+ * 楽曲の総再生時間から中間地点付近の開始時間を計算する
+ * YouTube_Iframe_Guide.mdの仕様に従った実装
+ * @param totalDuration 楽曲の総再生時間（秒）
+ * @param playDuration 再生時間（秒）
+ * @returns 中間地点付近の開始時間（秒）
+ */
+export const calculateMidpointStartTime = (totalDuration: number, playDuration: number = 5): number => {
+  // 楽曲が再生時間より短い場合は0秒から開始
+  if (totalDuration <= playDuration) {
+    return 0;
+  }
+
+  // 中間地点を計算
+  const midpoint = Math.floor(totalDuration / 2);
+  
+  // 中間地点の前後25%の範囲で開始時間を決定
+  const variationRange = Math.floor(totalDuration * 0.25);
+  const minStart = Math.max(0, midpoint - variationRange);
+  const maxStart = Math.min(totalDuration - playDuration, midpoint + variationRange);
+  
+  // 最小値が最大値を超える場合の調整
+  if (minStart >= maxStart) {
+    // 再生可能な最大開始時間を返す
+    return Math.max(0, totalDuration - playDuration);
+  }
+  
+  // 範囲内でランダムに決定
+  return Math.floor(Math.random() * (maxStart - minStart + 1)) + minStart;
 };
 
 /**

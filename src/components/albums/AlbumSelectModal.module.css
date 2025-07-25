@@ -43,11 +43,26 @@
   padding: 16px;
   background: #f9fafb;
   transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  user-select: none;
 }
 
 .albumCard:hover {
   border-color: #3b82f6;
   background: #eff6ff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+}
+
+.albumCard.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.2);
+}
+
+.albumCard.selected:hover {
+  border-color: #2563eb;
+  background: #dbeafe;
 }
 
 .albumJacket {

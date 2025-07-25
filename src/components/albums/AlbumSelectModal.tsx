@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Checkbox, Modal } from '@/components/common';
+import { Button, CheckboxIcon, Modal } from '@/components/common';
 import type { Album, Artist } from '@/types';
 import styles from './AlbumSelectModal.module.css';
 
@@ -11,13 +11,7 @@ interface AlbumSelectModalProps {
   onSelectionChange: (albumIds: string[]) => void;
 }
 
-export const AlbumSelectModal: React.FC<AlbumSelectModalProps> = ({
-  isOpen,
-  onClose,
-  artists,
-  selectedAlbumIds,
-  onSelectionChange,
-}) => {
+export const AlbumSelectModal: React.FC<AlbumSelectModalProps> = ({ isOpen, onClose, artists, selectedAlbumIds, onSelectionChange }) => {
   const [tempSelectedIds, setTempSelectedIds] = useState<string[]>(selectedAlbumIds);
 
   // モーダルが開かれた時に現在の選択状態を反映
@@ -27,11 +21,12 @@ export const AlbumSelectModal: React.FC<AlbumSelectModalProps> = ({
     }
   }, [isOpen, selectedAlbumIds]);
 
-  const handleAlbumToggle = (albumId: string, checked: boolean) => {
-    if (checked) {
-      setTempSelectedIds((prev) => [...prev, albumId]);
-    } else {
+  const handleAlbumToggle = (albumId: string) => {
+    const isCurrentlySelected = tempSelectedIds.includes(albumId);
+    if (isCurrentlySelected) {
       setTempSelectedIds((prev) => prev.filter((id) => id !== albumId));
+    } else {
+      setTempSelectedIds((prev) => [...prev, albumId]);
     }
   };
 
@@ -71,28 +66,32 @@ export const AlbumSelectModal: React.FC<AlbumSelectModalProps> = ({
             <div key={artist.id} className={styles.artistSection}>
               <h3 className={styles.artistName}>{artist.name}</h3>
               <div className={styles.albumGrid}>
-                {artist.albums.map((album) => (
-                  <div key={album.id} className={styles.albumCard}>
-                    <img
-                      src={album.jacketUrl}
-                      alt={`${album.name}のジャケット`}
-                      className={styles.albumJacket}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder-album.svg'; // フォールバック画像
-                      }}
-                    />
-                    <div className={styles.albumInfo}>
-                      <Checkbox
-                        id={`album-${album.id}`}
-                        label={album.name}
-                        checked={tempSelectedIds.includes(album.id)}
-                        onChange={(checked) => handleAlbumToggle(album.id, checked)}
+                {artist.albums.map((album) => {
+                  const isSelected = tempSelectedIds.includes(album.id);
+                  return (
+                    <button
+                      type="button"
+                      key={album.id}
+                      className={`${styles.albumCard} ${isSelected ? styles.selected : ''}`}
+                      onClick={() => handleAlbumToggle(album.id)}
+                      tabIndex={0}
+                    >
+                      <img
+                        src={album.jacketUrl}
+                        alt={`${album.name}のジャケット`}
+                        className={styles.albumJacket}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder-album.svg'; // フォールバック画像
+                        }}
                       />
-                      <span className={styles.trackCount}>{album.tracks.length}曲</span>
-                    </div>
-                  </div>
-                ))}
+                      <div className={styles.albumInfo}>
+                        <CheckboxIcon checked={isSelected} label={album.name} />
+                        <span className={styles.trackCount}>{album.tracks.length}曲</span>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           ))}
@@ -104,11 +103,7 @@ export const AlbumSelectModal: React.FC<AlbumSelectModalProps> = ({
             <Button variant="outline" onClick={handleCancel}>
               キャンセル
             </Button>
-            <Button
-              variant="primary"
-              onClick={handleConfirm}
-              disabled={tempSelectedIds.length === 0}
-            >
+            <Button variant="primary" onClick={handleConfirm} disabled={tempSelectedIds.length === 0}>
               決定
             </Button>
           </div>

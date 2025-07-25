@@ -7,7 +7,6 @@ import { useMultipleYouTubePlayers } from '@/hooks';
 import {
   calculateProgress,
   generateQuizQuestions,
-  getRandomStartTime,
   getTracksFromSelectedAlbums,
 } from '@/lib/quiz-utils';
 import { fetchSongsData, getSelectedAlbumIds } from '@/lib/songs-api';
@@ -91,8 +90,8 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
   const handlePlayTracks = () => {
     if (!currentQuestion || !isAllPlayersReady) return;
 
-    const startTime = getRandomStartTime(currentQuestion.tracks[0], 30);
-    playTracks(currentQuestion.tracks, startTime, 30);
+    // 事前決定された各楽曲の開始時間を使用
+    playTracks(currentQuestion.tracks, currentQuestion.startTimes, 5);
   };
 
   // 楽曲停止
@@ -110,33 +109,53 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
     setAnswerModalState({ isOpen: false, trackNumber: 1 });
   };
 
-  // 楽曲選択処理
+  // 楽曲選択処理（順不同対応）
   const handleTrackSelect = useCallback(
-    (selectedTrack: Track) => {
+    (selectedTrack: Track, setFeedback: (feedback: any) => void, shouldClose?: boolean) => {
       if (!currentQuestion) return;
 
-      const trackNumber = answerModalState.trackNumber;
-      const correctTrack = currentQuestion.tracks[trackNumber - 1];
-      const isCorrect = selectedTrack.id === correctTrack.id;
+      // 選択された楽曲が問題の楽曲に含まれているかチェック
+      const isCorrect = currentQuestion.tracks.some(track => track.id === selectedTrack.id);
+      // すでに正解済みかチェック
+      const isAlreadyAnswered = currentQuestion.correctAnswers.includes(selectedTrack.id);
 
-      // 正解の場合、correctAnswersに追加
-      if (isCorrect) {
+      if (isCorrect && !isAlreadyAnswered) {
+        // 正解の場合、correctAnswersに追加
         const updatedQuestions = [...questions];
+        const newCorrectAnswers = [...currentQuestion.correctAnswers, selectedTrack.id];
         updatedQuestions[currentQuestionIndex] = {
           ...currentQuestion,
-          correctAnswers: [...currentQuestion.correctAnswers, correctTrack.id],
+          correctAnswers: newCorrectAnswers,
         };
         setQuestions(updatedQuestions);
-      }
+        
+        // 問題4対応: モーダル下部にフィードバック表示
+        setFeedback({
+          type: 'correct',
+          message: `正解！ ${selectedTrack.title}`
+        });
 
-      // アラートで正解・不正解を表示
-      if (isCorrect) {
-        alert(`正解！\n${correctTrack.title}`);
+        // 問題6対応: 全問正解時（3問すべて正解）にはモーダルを即座に閉じる
+        if (newCorrectAnswers.length === 3) {
+          setTimeout(() => {
+            handleCloseAnswerModal();
+          }, 100); // フィードバック表示後、即座に閉じる
+        }
+      } else if (isAlreadyAnswered) {
+        // すでに正解済みの場合
+        setFeedback({
+          type: 'already-answered',
+          message: `すでに正解済みです: ${selectedTrack.title}`
+        });
       } else {
-        alert(`不正解...\n正解: ${correctTrack.title}\nあなたの回答: ${selectedTrack.title}`);
+        // 不正解の場合（問題7対応: 正解の楽曲名は表示しない）
+        setFeedback({
+          type: 'incorrect',
+          message: '不正解...'
+        });
       }
     },
-    [currentQuestion, questions, currentQuestionIndex, answerModalState.trackNumber],
+    [currentQuestion, questions, currentQuestionIndex],
   );
 
   // 答えを見る
@@ -234,35 +253,42 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
         </div>
 
         <div className={styles.answersSection}>
-          <h2>楽曲を選択してください</h2>
-          <div className={styles.trackButtons}>
-            {[1, 2, 3].map((trackNumber) => {
-              const isAnswered = currentQuestion.correctAnswers.includes(
-                currentQuestion.tracks[trackNumber - 1].id,
-              );
-              const isRevealed = currentQuestion.isAnswerRevealed;
-
-              return (
-                <div key={trackNumber} className={styles.trackButton}>
-                  <Button
-                    variant={isAnswered ? 'primary' : 'outline'}
-                    size="large"
-                    onClick={() => handleOpenAnswerModal(trackNumber)}
-                    disabled={isAnswered || isRevealed}
-                  >
-                    Track {trackNumber}
-                    {isAnswered && ' ✓'}
-                    {isRevealed && !isAnswered && (
-                      <span className={styles.revealedAnswer}>
-                        <br />
-                        {currentQuestion.tracks[trackNumber - 1].title}
-                      </span>
-                    )}
-                  </Button>
-                </div>
-              );
-            })}
+          <h2>楽曲を特定してください</h2>
+          <div className={styles.answerButton}>
+            <Button
+              variant="primary"
+              size="large"
+              onClick={() => handleOpenAnswerModal(1)}
+              disabled={currentQuestion.isAnswerRevealed && currentQuestion.correctAnswers.length === 3}
+            >
+              回答する
+            </Button>
           </div>
+          {/* 正解済み楽曲の表示 */}
+          {currentQuestion.correctAnswers.length > 0 && (
+            <div className={styles.correctAnswers}>
+              <h3>正解済み楽曲:</h3>
+              <ul>
+                {currentQuestion.correctAnswers.map((trackId) => {
+                  const track = currentQuestion.tracks.find(t => t.id === trackId);
+                  return (
+                    <li key={trackId}>{track?.title}</li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+          {/* 答えが見られた場合の全楽曲表示 */}
+          {currentQuestion.isAnswerRevealed && (
+            <div className={styles.revealedAnswers}>
+              <h3>この問題の楽曲一覧:</h3>
+              <ul>
+                {currentQuestion.tracks.map((track) => (
+                  <li key={track.id}>{track.title}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <div className={styles.controls}>

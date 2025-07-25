@@ -155,6 +155,12 @@
   padding: 16px 0;
   margin-top: 16px;
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footerContent {
+  display: flex;
   justify-content: space-between;
   align-items: center;
 }
@@ -167,6 +173,45 @@
 .footerButtons {
   display: flex;
   gap: 12px;
+}
+
+/* フィードバック表示 */
+.feedback {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-align: center;
+  margin: 8px 0;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.feedback.correct {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.feedback.incorrect {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.feedback.already-answered {
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fed7aa;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* スクロールバーのカスタマイズ */
@@ -209,7 +254,7 @@
     height: 200px;
   }
 
-  .footer {
+  .footerContent {
     flex-direction: column;
     gap: 12px;
     align-items: stretch;

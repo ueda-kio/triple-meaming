@@ -7,8 +7,13 @@ interface AnswerModalProps {
   isOpen: boolean;
   onClose: () => void;
   albums: Album[];
-  onTrackSelect: (track: Track) => void;
+  onTrackSelect: (track: Track, setFeedback: (feedback: FeedbackState) => void, shouldClose?: boolean) => void;
   trackNumber: number; // 1, 2, 3のいずれか
+}
+
+interface FeedbackState {
+  type: 'correct' | 'incorrect' | 'already-answered' | null;
+  message: string;
 }
 
 export const AnswerModal: React.FC<AnswerModalProps> = ({
@@ -20,6 +25,7 @@ export const AnswerModal: React.FC<AnswerModalProps> = ({
 }) => {
   const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
+  const [feedback, setFeedback] = useState<FeedbackState>({ type: null, message: '' });
 
   const selectedAlbum = albums.find((album) => album.id === selectedAlbumId);
 
@@ -34,19 +40,26 @@ export const AnswerModal: React.FC<AnswerModalProps> = ({
 
   const handleConfirm = () => {
     if (selectedTrack) {
-      onTrackSelect(selectedTrack);
-      handleClose();
+      // フィードバックをリセット
+      setFeedback({ type: null, message: '' });
+      
+      // トラック選択を実行（問題4,5対応のため、フィードバック処理をこちらで行う）
+      onTrackSelect(selectedTrack, setFeedback);
+      
+      // 選択をクリア（問題5対応: モーダルを閉じずに次の回答を可能にする）
+      setSelectedTrack(null);
     }
   };
 
   const handleClose = () => {
     setSelectedAlbumId(null);
     setSelectedTrack(null);
+    setFeedback({ type: null, message: '' });
     onClose();
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={`Track ${trackNumber} の楽曲を選択`}>
+    <Modal isOpen={isOpen} onClose={handleClose} title="楽曲を選択してください">
       <div className={styles.content}>
         <div className={styles.twoPane}>
           {/* 左ペイン: アルバムリスト */}
@@ -108,18 +121,28 @@ export const AnswerModal: React.FC<AnswerModalProps> = ({
         </div>
 
         <div className={styles.footer}>
-          {selectedTrack && (
-            <div className={styles.selectedInfo}>
-              <strong>選択中:</strong> {selectedTrack.title}
+          {/* フィードバック表示エリア */}
+          {feedback.type && (
+            <div className={`${styles.feedback} ${styles[feedback.type]}`}>
+              {feedback.message}
             </div>
           )}
-          <div className={styles.footerButtons}>
-            <Button variant="outline" onClick={handleClose}>
-              キャンセル
-            </Button>
-            <Button variant="primary" onClick={handleConfirm} disabled={!selectedTrack}>
-              決定
-            </Button>
+          
+          <div className={styles.footerContent}>
+            {selectedTrack && (
+              <div className={styles.selectedInfo}>
+                <strong>選択中:</strong> {selectedTrack.title}
+              </div>
+            )}
+            
+            <div className={styles.footerButtons}>
+              <Button variant="outline" onClick={handleClose}>
+                キャンセル
+              </Button>
+              <Button variant="primary" onClick={handleConfirm} disabled={!selectedTrack}>
+                決定
+              </Button>
+            </div>
           </div>
         </div>
       </div>

@@ -30,6 +30,7 @@ export interface SongsData {
 export interface QuizQuestion {
   questionNumber: number;
   tracks: [Track, Track, Track]; // 必ず3曲
+  startTimes: [number, number, number]; // 各楽曲の開始時間（秒）
   correctAnswers: string[]; // 正解した楽曲のID
   isAnswerRevealed: boolean; // 答えが表示されているか
 }

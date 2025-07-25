@@ -9,7 +9,7 @@ interface MultiplePlayersState {
 }
 
 interface UseMultipleYouTubePlayersReturn extends MultiplePlayersState {
-  playTracks: (tracks: [Track, Track, Track], startTime: number, duration: number) => void;
+  playTracks: (tracks: [Track, Track, Track], startTimes: [number, number, number], duration: number) => void;
   stopTracks: () => void;
   preloadTracks: (tracks: [Track, Track, Track]) => void;
   isAllPlayersReady: boolean;
@@ -44,16 +44,17 @@ export const useMultipleYouTubePlayers = (): UseMultipleYouTubePlayersReturn => 
 
   // 3曲同時再生
   const playTracks = useCallback(
-    (tracks: [Track, Track, Track], startTime: number, duration: number) => {
+    (tracks: [Track, Track, Track], startTimes: [number, number, number], duration: number) => {
       if (!isAllPlayersReady) {
         console.warn('All players are not ready yet');
         return;
       }
 
       try {
-        // 3つのプレイヤーで同時に再生開始
+        // 3つのプレイヤーで同時に再生開始（各楽曲の開始時間を使用）
         players.forEach((player, index) => {
           const track = tracks[index];
+          const startTime = startTimes[index];
           if (track) {
             player.playTrack(track.youtubeUrl, startTime, duration);
           }

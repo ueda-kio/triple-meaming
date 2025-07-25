@@ -1,4 +1,4 @@
-import type { Album, Artist, QuizQuestion, Track } from '@/types';
+import type { Artist, QuizQuestion, Track } from '@/types';
 
 /**
  * 指定されたアルバムIDから楽曲を取得する
@@ -66,9 +66,17 @@ export const generateQuizQuestions = (
     // 使用済み楽曲としてマーク
     selectedTracks.forEach((track) => usedTrackIds.add(track.id));
 
+    // 各楽曲の開始時間を事前決定
+    const startTimes: [number, number, number] = [
+      calculateStartTime(selectedTracks[0], 5),
+      calculateStartTime(selectedTracks[1], 5),
+      calculateStartTime(selectedTracks[2], 5),
+    ];
+
     questions.push({
       questionNumber: i + 1,
       tracks: selectedTracks,
+      startTimes,
       correctAnswers: [],
       isAnswerRevealed: false,
     });
@@ -78,21 +86,28 @@ export const generateQuizQuestions = (
 };
 
 /**
- * 楽曲の開始時間をランダムに決定する
+ * 楽曲の開始時間を算出する（クイズ毎に異なる開始時間）
  * @param track 楽曲データ
  * @param playDuration 再生時間（秒）
  * @returns 開始時間（秒）
  */
-export const getRandomStartTime = (track: Track, playDuration: number = 30): number => {
-  // 楽曲の長さが指定されている場合
-  if (track.duration && track.duration > playDuration) {
-    const maxStartTime = track.duration - playDuration;
-    return Math.floor(Math.random() * maxStartTime);
+export const calculateStartTime = (track: Track, playDuration: number = 5): number => {
+  // 楽曲の長さが指定されている場合、40-60%の範囲からランダム選択
+  // ただし、楽曲が十分な長さ（180秒以上）の場合のみ
+  if (track.duration !== undefined && track.duration >= 180) {
+    const min = Math.floor(track.duration * 0.4);
+    const max = Math.floor(track.duration * 0.6);
+    // 再生時間を考慮して最大開始時間を調整
+    const adjustedMax = Math.min(max, track.duration - playDuration);
+    if (adjustedMax > min) {
+      return Math.floor(Math.random() * (adjustedMax - min + 1)) + min;
+    }
   }
 
-  // デフォルトは30秒～3分の範囲からランダム選択
-  const defaultMaxStart = 180 - playDuration; // 3分 - 再生時間
-  return Math.floor(Math.random() * defaultMaxStart) + 30; // 最低30秒後から開始
+  // 原則: 90秒から150秒の間のランダムな時間（再生時間を考慮）
+  const defaultMin = 90;
+  const defaultMax = Math.min(150, 180 - playDuration); // 最大3分 - 再生時間
+  return Math.floor(Math.random() * (defaultMax - defaultMin + 1)) + defaultMin;
 };
 
 /**

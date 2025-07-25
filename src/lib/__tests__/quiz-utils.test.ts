@@ -2,9 +2,9 @@ import type { Artist, QuizQuestion, Track } from '@/types';
 import {
   calculateFinalScore,
   calculateProgress,
+  calculateStartTime,
   generateQuizQuestions,
   getRandomItems,
-  getRandomStartTime,
   getTracksFromSelectedAlbums,
 } from '../quiz-utils';
 
@@ -113,32 +113,75 @@ describe('quiz-utils', () => {
       expect(result[0].correctAnswers).toHaveLength(0);
       expect(result[0].isAnswerRevealed).toBe(false);
     });
+
+    it('各問題に各楽曲の開始時間が設定されること', () => {
+      const result = generateQuizQuestions(mockTracks, 2);
+      result.forEach((question) => {
+        expect(question.startTimes).toHaveLength(3);
+        question.startTimes.forEach((startTime) => {
+          expect(typeof startTime).toBe('number');
+          expect(startTime).toBeGreaterThanOrEqual(90);
+          expect(startTime).toBeLessThanOrEqual(175);
+        });
+      });
+    });
   });
 
-  describe('getRandomStartTime', () => {
-    it('楽曲の長さが指定されている場合適切な範囲で開始時間を返すこと', () => {
+  describe('calculateStartTime', () => {
+    it('durationが180秒以上の場合40-60%の範囲で開始時間を返すこと', () => {
       const track: Track = {
         id: 'track001',
         title: 'テストトラック',
         youtubeUrl: 'https://youtube.com/1',
-        duration: 180, // 3分
+        duration: 200, // 200秒
       };
 
-      const result = getRandomStartTime(track, 30);
-      expect(result).toBeGreaterThanOrEqual(0);
-      expect(result).toBeLessThanOrEqual(150); // 180 - 30
+      const result = calculateStartTime(track, 5);
+      const min = Math.floor(200 * 0.4); // 80秒
+      const max = Math.min(Math.floor(200 * 0.6), 200 - 5); // min(120, 195) = 120秒
+      expect(result).toBeGreaterThanOrEqual(min);
+      expect(result).toBeLessThanOrEqual(max);
     });
 
-    it('楽曲の長さが指定されていない場合デフォルト範囲で開始時間を返すこと', () => {
+    it('durationが180秒未満の場合はデフォルト範囲で開始時間を返すこと', () => {
+      const track: Track = {
+        id: 'track001',
+        title: 'テストトラック',
+        youtubeUrl: 'https://youtube.com/1',
+        duration: 120, // 120秒（180秒未満）
+      };
+
+      const result = calculateStartTime(track, 5);
+      // durationが180秒未満の場合はデフォルト範囲になる
+      expect(result).toBeGreaterThanOrEqual(90);
+      expect(result).toBeLessThanOrEqual(175); // min(150, 180-5)
+    });
+
+    it('durationが指定されていない場合90-150秒の範囲で開始時間を返すこと', () => {
       const track: Track = {
         id: 'track001',
         title: 'テストトラック',
         youtubeUrl: 'https://youtube.com/1',
       };
 
-      const result = getRandomStartTime(track, 30);
-      expect(result).toBeGreaterThanOrEqual(30);
-      expect(result).toBeLessThanOrEqual(150); // 180 - 30
+      const result = calculateStartTime(track, 5);
+      expect(result).toBeGreaterThanOrEqual(90);
+      expect(result).toBeLessThanOrEqual(175); // min(150, 180-5)
+    });
+
+    it('playDurationが考慮されること', () => {
+      const track: Track = {
+        id: 'track001',
+        title: 'テストトラック',
+        youtubeUrl: 'https://youtube.com/1',
+        duration: 300, // 300秒（180秒以上）
+      };
+
+      const result = calculateStartTime(track, 30);
+      const min = Math.floor(300 * 0.4); // 120秒
+      const max = Math.min(Math.floor(300 * 0.6), 300 - 30); // min(180, 270) = 180秒
+      expect(result).toBeGreaterThanOrEqual(min);
+      expect(result).toBeLessThanOrEqual(max);
     });
   });
 
@@ -147,18 +190,21 @@ describe('quiz-utils', () => {
       {
         questionNumber: 1,
         tracks: [{} as Track, {} as Track, {} as Track] as [Track, Track, Track],
+        startTimes: [90, 95, 100] as [number, number, number],
         correctAnswers: [],
         isAnswerRevealed: false,
       },
       {
         questionNumber: 2,
         tracks: [{} as Track, {} as Track, {} as Track] as [Track, Track, Track],
+        startTimes: [110, 115, 120] as [number, number, number],
         correctAnswers: [],
         isAnswerRevealed: false,
       },
       {
         questionNumber: 3,
         tracks: [{} as Track, {} as Track, {} as Track] as [Track, Track, Track],
+        startTimes: [130, 135, 140] as [number, number, number],
         correctAnswers: [],
         isAnswerRevealed: false,
       },
@@ -184,18 +230,21 @@ describe('quiz-utils', () => {
       {
         questionNumber: 1,
         tracks: [{} as Track, {} as Track, {} as Track] as [Track, Track, Track],
+        startTimes: [90, 95, 100] as [number, number, number],
         correctAnswers: ['track001', 'track002'], // 2問正解
         isAnswerRevealed: false,
       },
       {
         questionNumber: 2,
         tracks: [{} as Track, {} as Track, {} as Track] as [Track, Track, Track],
+        startTimes: [110, 115, 120] as [number, number, number],
         correctAnswers: ['track003', 'track004', 'track005'], // 3問正解
         isAnswerRevealed: false,
       },
       {
         questionNumber: 3,
         tracks: [{} as Track, {} as Track, {} as Track] as [Track, Track, Track],
+        startTimes: [130, 135, 140] as [number, number, number],
         correctAnswers: [], // 0問正解
         isAnswerRevealed: true,
       },
@@ -214,6 +263,7 @@ describe('quiz-utils', () => {
         {
           questionNumber: 1,
           tracks: [{} as Track, {} as Track, {} as Track] as [Track, Track, Track],
+          startTimes: [90, 95, 100] as [number, number, number],
           correctAnswers: ['track001', 'track002', 'track003'],
           isAnswerRevealed: false,
         },

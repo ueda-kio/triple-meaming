@@ -220,9 +220,13 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
   }
 
   // 出題範囲のアルバムを取得
-  const availableAlbums = songsData.artists.flatMap((artist) =>
-    artist.albums.filter((album) => albumIds.includes(album.id)),
-  );
+  const availableAlbums = songsData.artists.flatMap((artist) => {
+    // URLクエリがない場合はすべてのアルバムを使用
+    if (albumIds.length === 0) {
+      return artist.albums;
+    }
+    return artist.albums.filter((album) => albumIds.includes(album.id));
+  });
 
   const canProceedToNext =
     currentQuestion.correctAnswers.length === 3 || currentQuestion.isAnswerRevealed;

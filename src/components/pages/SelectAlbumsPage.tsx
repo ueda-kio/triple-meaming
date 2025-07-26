@@ -1,14 +1,14 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { AlbumSelectModal } from '@/components/albums/AlbumSelectModal';
 import { Button } from '@/components/common';
 import { createAlbumsQueryParam, fetchSongsData, getSelectedAlbumIds } from '@/lib/songs-api';
 import type { SongsData } from '@/types';
 import styles from './SelectAlbumsPage.module.css';
 
-export const SelectAlbumsPage: React.FC = () => {
+const SelectAlbumsContent: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -179,5 +179,20 @@ export const SelectAlbumsPage: React.FC = () => {
         onSelectionChange={handleAlbumSelection}
       />
     </div>
+  );
+};
+
+export const SelectAlbumsPage: React.FC = () => {
+  return (
+    <Suspense fallback={
+      <div className={styles.container}>
+        <div className={styles.loading}>
+          <div className={styles.spinner} />
+          <p>読み込み中...</p>
+        </div>
+      </div>
+    }>
+      <SelectAlbumsContent />
+    </Suspense>
   );
 };

@@ -21,7 +21,7 @@ export const ResultPage: React.FC = () => {
 
         <main className={styles.main}>
           <div className={styles.messageSection}>
-            <h2 className={styles.messageTitle}>Triple Meaningで遊んでくれてありがとう！</h2>
+            <h2 className={styles.messageTitle}>トリプルミーミングで遊んでくれてありがとう！</h2>
             <p className={styles.messageText}>
               音楽の知識を深めて、さらなる高得点を目指しましょう。
               <br />

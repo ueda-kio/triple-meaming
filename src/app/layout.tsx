@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Triple Meaning',
+  title: 'トリプルミーミング',
   description: '3つの楽曲を同時に再生して、楽曲名を当てる音楽クイズ',
 };
 

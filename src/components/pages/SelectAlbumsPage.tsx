@@ -125,7 +125,7 @@ const SelectAlbumsContent: React.FC = () => {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Triple Meaning</h1>
+        <h1 className={styles.title}>トリプルミーミング</h1>
         <p className={styles.subtitle}>3つの楽曲を同時に再生して、楽曲名を当てる音楽クイズ</p>
       </header>
 

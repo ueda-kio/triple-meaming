@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { Button } from '@/components/common';
+import { Button, PlayIcon, PauseIcon } from '@/components/common';
 import type { Track, Album } from '@/types';
 import styles from './TrackCassetteCard.module.css';
 
@@ -53,7 +53,7 @@ export const TrackCassetteCard: React.FC<TrackCassetteCardProps> = ({
       </div>
       <div className={styles.playButton}>
         <Button variant="primary" size="small" onClick={handleClick}>
-          {isPlaying ? '⏸️' : '▶️'}
+          {isPlaying ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
         </Button>
       </div>
     </div>

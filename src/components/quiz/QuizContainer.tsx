@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { Button } from '@/components/common';
+import { Button, PlayIcon, PauseIcon } from '@/components/common';
 import { useMultipleYouTubePlayers, useSingleYouTubePlayer } from '@/hooks';
 import { calculateProgress, generateQuizQuestions, getTracksFromSelectedAlbums } from '@/lib/quiz-utils';
 import { fetchSongsData, createAlbumsQueryParam } from '@/lib/songs-api';
@@ -256,7 +256,15 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
         <div className={styles.playerSection}>
           <div className={styles.playButton}>
             <Button variant="primary" size="large" onClick={isPlaying ? handleStopTracks : handlePlayTracks} disabled={!isAllPlayersReady}>
-              {isPlaying ? '⏹ 停止' : '▶ 再生'}
+              {isPlaying ? (
+                <>
+                  <PauseIcon size={20} /> 停止
+                </>
+              ) : (
+                <>
+                  <PlayIcon size={20} /> 再生
+                </>
+              )}
             </Button>
           </div>
         </div>

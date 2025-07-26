@@ -11,12 +11,7 @@
 }
 
 .button:hover:not(.disabled) {
-  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.button:active:not(.disabled) {
-  transform: translateY(0);
 }
 
 /* Variants */
@@ -72,6 +67,5 @@
 .disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none !important;
   box-shadow: none !important;
 }

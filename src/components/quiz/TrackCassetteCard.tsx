@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Button } from '@/components/common';
 import type { Track, Album } from '@/types';
 import styles from './TrackCassetteCard.module.css';
@@ -32,10 +33,13 @@ export const TrackCassetteCard: React.FC<TrackCassetteCardProps> = ({
   return (
     <div className={styles.cassetteCard}>
       <div className={styles.albumJacket}>
-        <img
+        <Image
           src={album.jacketUrl}
           alt={`${album.name}のジャケット`}
           className={styles.jacketImage}
+          width={200}
+          height={200}
+          priority={false}
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.src = '/placeholder-album.svg';
@@ -48,11 +52,7 @@ export const TrackCassetteCard: React.FC<TrackCassetteCardProps> = ({
         <p className={styles.artistName}>{artistName}</p>
       </div>
       <div className={styles.playButton}>
-        <Button
-          variant="primary"
-          size="small"
-          onClick={handleClick}
-        >
+        <Button variant="primary" size="small" onClick={handleClick}>
           {isPlaying ? '⏸️' : '▶️'}
         </Button>
       </div>

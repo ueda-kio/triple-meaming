@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Button, CheckboxIcon, Modal } from '@/components/common';
-import type { Album, Artist } from '@/types';
+import type { Artist } from '@/types';
 import styles from './AlbumSelectModal.module.css';
 
 interface AlbumSelectModalProps {
@@ -76,10 +77,13 @@ export const AlbumSelectModal: React.FC<AlbumSelectModalProps> = ({ isOpen, onCl
                       onClick={() => handleAlbumToggle(album.id)}
                       tabIndex={0}
                     >
-                      <img
+                      <Image
                         src={album.jacketUrl}
                         alt={`${album.name}のジャケット`}
                         className={styles.albumJacket}
+                        width={150}
+                        height={150}
+                        priority={false}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = '/placeholder-album.svg'; // フォールバック画像

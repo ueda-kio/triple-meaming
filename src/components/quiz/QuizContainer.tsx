@@ -4,12 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/common';
 import { useMultipleYouTubePlayers, useSingleYouTubePlayer } from '@/hooks';
-import {
-  calculateProgress,
-  generateQuizQuestions,
-  getTracksFromSelectedAlbums,
-} from '@/lib/quiz-utils';
-import { fetchSongsData, getSelectedAlbumIds, createAlbumsQueryParam } from '@/lib/songs-api';
+import { calculateProgress, generateQuizQuestions, getTracksFromSelectedAlbums } from '@/lib/quiz-utils';
+import { fetchSongsData, createAlbumsQueryParam } from '@/lib/songs-api';
 import type { Album, QuizQuestion, SongsData, Track } from '@/types';
 import { AnswerModal } from './AnswerModal';
 import { TrackCassetteCard } from './TrackCassetteCard';
@@ -36,8 +32,7 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
   }>({ isOpen: false, trackNumber: 1 });
 
   // YouTube Players
-  const { isPlaying, isAllPlayersReady, playTracks, stopTracks, preloadTracks } =
-    useMultipleYouTubePlayers();
+  const { isPlaying, isAllPlayersReady, playTracks, stopTracks, preloadTracks } = useMultipleYouTubePlayers();
   const singlePlayer = useSingleYouTubePlayer('correct-track-player');
 
   // データの初期読み込みとクイズ生成
@@ -49,10 +44,8 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
         setSongsData(data);
 
         // URLクエリがない場合はすべてのアルバムを使用
-        const finalAlbumIds = albumIds.length === 0 
-          ? data.artists.flatMap(artist => artist.albums.map(album => album.id))
-          : albumIds;
-          
+        const finalAlbumIds = albumIds.length === 0 ? data.artists.flatMap((artist) => artist.albums.map((album) => album.id)) : albumIds;
+
         const availableTracks = getTracksFromSelectedAlbums(data.artists, finalAlbumIds);
 
         if (availableTracks.length < 3) {
@@ -111,7 +104,7 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
       }
       singlePlayer.playTrack(track, startTime, 5);
     },
-    [isPlaying, stopTracks, singlePlayer],
+    [isPlaying, stopTracks, singlePlayer]
   );
 
   // 個別楽曲停止
@@ -131,11 +124,11 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
 
   // 楽曲選択処理（順不同対応）
   const handleTrackSelect = useCallback(
-    (selectedTrack: Track, setFeedback: (feedback: any) => void, shouldClose?: boolean) => {
+    (selectedTrack: Track, setFeedback: (feedback: any) => void) => {
       if (!currentQuestion) return;
 
       // 選択された楽曲が問題の楽曲に含まれているかチェック
-      const isCorrect = currentQuestion.tracks.some(track => track.id === selectedTrack.id);
+      const isCorrect = currentQuestion.tracks.some((track) => track.id === selectedTrack.id);
       // すでに正解済みかチェック
       const isAlreadyAnswered = currentQuestion.correctAnswers.includes(selectedTrack.id);
 
@@ -148,34 +141,30 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
           correctAnswers: newCorrectAnswers,
         };
         setQuestions(updatedQuestions);
-        
-        // 問題4対応: モーダル下部にフィードバック表示
+
         setFeedback({
           type: 'correct',
-          message: `正解！ ${selectedTrack.title}`
+          message: `正解！ ${selectedTrack.title}`,
         });
 
-        // 問題6対応: 全問正解時（3問すべて正解）にはモーダルを即座に閉じる
         if (newCorrectAnswers.length === 3) {
-          setTimeout(() => {
-            handleCloseAnswerModal();
-          }, 100); // フィードバック表示後、即座に閉じる
+          handleCloseAnswerModal();
         }
       } else if (isAlreadyAnswered) {
         // すでに正解済みの場合
         setFeedback({
           type: 'already-answered',
-          message: `すでに正解済みです: ${selectedTrack.title}`
+          message: `すでに正解済みです: ${selectedTrack.title}`,
         });
       } else {
-        // 不正解の場合（問題7対応: 正解の楽曲名は表示しない）
+        // 不正解の場合
         setFeedback({
           type: 'incorrect',
-          message: '不正解...'
+          message: '不正解...',
         });
       }
     },
-    [currentQuestion, questions, currentQuestionIndex],
+    [currentQuestion, questions, currentQuestionIndex]
   );
 
   // 答えを見る
@@ -203,9 +192,7 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
   // トップページに戻る
   const handleBackToTop = () => {
     if (songsData) {
-      const allAlbumIds = songsData.artists.flatMap(artist => 
-        artist.albums.map(album => album.id)
-      );
+      const allAlbumIds = songsData.artists.flatMap((artist) => artist.albums.map((album) => album.id));
       const finalAlbumIds = albumIds.length === 0 ? allAlbumIds : albumIds;
       const queryParam = createAlbumsQueryParam(finalAlbumIds, allAlbumIds);
       const homeUrl = queryParam ? `/?${queryParam}` : '/';
@@ -247,17 +234,13 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
     return artist.albums.filter((album) => albumIds.includes(album.id));
   });
 
-  const canProceedToNext =
-    currentQuestion.correctAnswers.length === 3 || currentQuestion.isAnswerRevealed;
+  const canProceedToNext = currentQuestion.correctAnswers.length === 3 || currentQuestion.isAnswerRevealed;
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.progressBar}>
-          <div
-            className={styles.progressFill}
-            style={{ width: `${progress.progressPercentage}%` }}
-          />
+          <div className={styles.progressFill} style={{ width: `${progress.progressPercentage}%` }} />
         </div>
         <div className={styles.questionInfo}>
           <h1>
@@ -272,17 +255,10 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
       <main className={styles.main}>
         <div className={styles.playerSection}>
           <div className={styles.playButton}>
-            <Button
-              variant="primary"
-              size="large"
-              onClick={isPlaying ? handleStopTracks : handlePlayTracks}
-              disabled={!isAllPlayersReady}
-            >
+            <Button variant="primary" size="large" onClick={isPlaying ? handleStopTracks : handlePlayTracks} disabled={!isAllPlayersReady}>
               {isPlaying ? '⏹ 停止' : '▶ 再生'}
             </Button>
           </div>
-
-          {!isAllPlayersReady && <p className={styles.loadingText}>プレイヤーを準備中...</p>}
         </div>
 
         <div className={styles.answersSection}>
@@ -303,26 +279,26 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
               <h3>正解済み楽曲:</h3>
               <div className={styles.cassetteList}>
                 {currentQuestion.correctAnswers.map((trackId) => {
-                  const track = currentQuestion.tracks.find(t => t.id === trackId);
-                  const trackIndex = currentQuestion.tracks.findIndex(t => t.id === trackId);
+                  const track = currentQuestion.tracks.find((t) => t.id === trackId);
+                  const trackIndex = currentQuestion.tracks.findIndex((t) => t.id === trackId);
                   const startTime = trackIndex !== -1 ? currentQuestion.startTimes[trackIndex] : 0;
-                  
+
                   if (!track || !songsData) return null;
-                  
+
                   // 楽曲が所属するアルバムとアーティストを検索
                   let albumInfo: { album: Album; artistName: string } | null = null;
                   for (const artist of songsData.artists) {
                     for (const album of artist.albums) {
-                      if (album.tracks.some(t => t.id === trackId)) {
+                      if (album.tracks.some((t) => t.id === trackId)) {
                         albumInfo = { album, artistName: artist.name };
                         break;
                       }
                     }
                     if (albumInfo) break;
                   }
-                  
+
                   if (!albumInfo) return null;
-                  
+
                   return (
                     <TrackCassetteCard
                       key={trackId}
@@ -349,25 +325,25 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
                   if (currentQuestion.correctAnswers.includes(track.id)) {
                     return null;
                   }
-                  
+
                   if (!songsData) return null;
-                  
+
                   // 楽曲が所属するアルバムとアーティストを検索
                   let albumInfo: { album: Album; artistName: string } | null = null;
                   for (const artist of songsData.artists) {
                     for (const album of artist.albums) {
-                      if (album.tracks.some(t => t.id === track.id)) {
+                      if (album.tracks.some((t) => t.id === track.id)) {
                         albumInfo = { album, artistName: artist.name };
                         break;
                       }
                     }
                     if (albumInfo) break;
                   }
-                  
+
                   if (!albumInfo) return null;
-                  
+
                   const startTime = currentQuestion.startTimes[index];
-                  
+
                   return (
                     <TrackCassetteCard
                       key={track.id}
@@ -388,11 +364,7 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ albumIds }) => {
 
         <div className={styles.controls}>
           {!currentQuestion.isAnswerRevealed && (
-            <Button 
-              variant="secondary" 
-              onClick={handleShowAnswer}
-              disabled={currentQuestion.correctAnswers.length === 3}
-            >
+            <Button variant="secondary" onClick={handleShowAnswer} disabled={currentQuestion.correctAnswers.length === 3}>
               答えを見る
             </Button>
           )}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Image from 'next/image';
 import { Button, Modal } from '@/components/common';
 import type { Album, Track } from '@/types';
 import styles from './AnswerModal.module.css';
@@ -16,13 +17,7 @@ interface FeedbackState {
   message: string;
 }
 
-export const AnswerModal: React.FC<AnswerModalProps> = ({
-  isOpen,
-  onClose,
-  albums,
-  onTrackSelect,
-  trackNumber,
-}) => {
+export const AnswerModal: React.FC<AnswerModalProps> = ({ isOpen, onClose, albums, onTrackSelect }) => {
   const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
   const [feedback, setFeedback] = useState<FeedbackState>({ type: null, message: '' });
@@ -42,10 +37,10 @@ export const AnswerModal: React.FC<AnswerModalProps> = ({
     if (selectedTrack) {
       // フィードバックをリセット
       setFeedback({ type: null, message: '' });
-      
+
       // トラック選択を実行（問題4,5対応のため、フィードバック処理をこちらで行う）
       onTrackSelect(selectedTrack, setFeedback);
-      
+
       // 選択をクリア（問題5対応: モーダルを閉じずに次の回答を可能にする）
       setSelectedTrack(null);
     }
@@ -70,15 +65,16 @@ export const AnswerModal: React.FC<AnswerModalProps> = ({
                 <button
                   key={album.id}
                   type="button"
-                  className={`${styles.albumItem} ${
-                    selectedAlbumId === album.id ? styles.selected : ''
-                  }`}
+                  className={`${styles.albumItem} ${selectedAlbumId === album.id ? styles.selected : ''}`}
                   onClick={() => handleAlbumSelect(album.id)}
                 >
-                  <img
+                  <Image
                     src={album.jacketUrl}
                     alt={`${album.name}のジャケット`}
                     className={styles.albumJacket}
+                    width={80}
+                    height={80}
+                    priority={false}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = '/placeholder-album.svg';
@@ -102,9 +98,7 @@ export const AnswerModal: React.FC<AnswerModalProps> = ({
                   <button
                     key={track.id}
                     type="button"
-                    className={`${styles.trackItem} ${
-                      selectedTrack?.id === track.id ? styles.selected : ''
-                    }`}
+                    className={`${styles.trackItem} ${selectedTrack?.id === track.id ? styles.selected : ''}`}
                     onClick={() => handleTrackSelect(track)}
                   >
                     <span className={styles.trackNumber}>{index + 1}</span>
@@ -122,19 +116,15 @@ export const AnswerModal: React.FC<AnswerModalProps> = ({
 
         <div className={styles.footer}>
           {/* フィードバック表示エリア */}
-          {feedback.type && (
-            <div className={`${styles.feedback} ${styles[feedback.type]}`}>
-              {feedback.message}
-            </div>
-          )}
-          
+          {feedback.type && <div className={`${styles.feedback} ${styles[feedback.type]}`}>{feedback.message}</div>}
+
           <div className={styles.footerContent}>
             {selectedTrack && (
               <div className={styles.selectedInfo}>
                 <strong>選択中:</strong> {selectedTrack.title}
               </div>
             )}
-            
+
             <div className={styles.footerButtons}>
               <Button variant="outline" onClick={handleClose}>
                 キャンセル
